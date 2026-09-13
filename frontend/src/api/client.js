@@ -1,6 +1,10 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
+// Local dev: backend runs standalone on :8000, now mounted under /api
+// (see backend/app/main.py). Production on Vercel: set VITE_API_BASE_URL
+// to the relative path "/api" — frontend and backend share one domain
+// under the Services model, so no absolute URL or CORS config is needed.
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000/api";
 
 const api = axios.create({ baseURL: API_BASE });
 

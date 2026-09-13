@@ -11,9 +11,9 @@ npm install
 npm run dev
 ```
 
-Defaults to talking to a backend at `http://localhost:8000`. To point at a
-deployed backend, copy `.env.example` to `.env` and set
-`VITE_API_BASE_URL`.
+Defaults to talking to a backend at `http://localhost:8000/api` — run the
+backend per its own README alongside this. To point elsewhere, copy
+`.env.example` to `.env` and set `VITE_API_BASE_URL`.
 
 ## One real technical constraint: Bong
 
@@ -30,17 +30,10 @@ other person's Bong code by hand instead of real BLE. A native (React
 Native) build later would swap in real `react-native-ble-plx` scanning
 against the same backend endpoints — no backend changes needed.
 
-## Deploying (Vercel)
+## Deploying
 
-Vite/React is a first-class Vercel framework preset — this is close to
-zero-config:
-
-1. Import this GitHub repo as a New Project in Vercel.
-2. Set **Root Directory** to `frontend`.
-3. Vercel auto-detects the Vite build (`npm run build`, output `dist`) —
-   no extra config needed.
-4. Add environment variable `VITE_API_BASE_URL` = your deployed backend's
-   Vercel URL (e.g. `https://lipila-backend.vercel.app`). Vite env vars are
-   baked in at build time, so redeploy after changing this.
-5. Once deployed, copy this project's URL and set it as `FRONTEND_ORIGIN`
-   in the **backend's** Vercel environment variables, so CORS allows it.
+See the root `README.md` and `vercel.json` — this frontend deploys as one
+service inside a single Vercel project alongside the backend, both served
+from one domain via Vercel's Services model. Set `VITE_API_BASE_URL=/api`
+(a relative path) in that project's environment variables — no CORS
+configuration needed since it's the same origin as the backend.

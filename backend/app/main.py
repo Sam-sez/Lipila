@@ -27,7 +27,12 @@ if os.getenv("VERCEL") and settings.REDIS_URL.startswith("redis://localhost"):
 
 Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
+# Vercel's Services model forwards the ORIGINAL request path — a request to
+# /api/users reaches this app as /api/users, not /users (unlike some other
+# platforms that strip the matched prefix). Rather than prefixing every
+# router individually, the whole app is built normally on `api_app` and then
+# mounted under /api on the outer `app` that Vercel actually serves.
+api_app = FastAPI(
     title="Lipila API",
     description=(
         "Orchestration layer over MTN MoMo / Airtel Money. Lipila never "
@@ -36,7 +41,7 @@ app = FastAPI(
     version="0.1.0",
 )
 
-app.add_middleware(
+api_app.add_middleware(
     CORSMiddleware,
     allow_origins=[settings.FRONTEND_ORIGIN, "http://localhost:5173", "http://localhost:3000"],
     allow_credentials=True,
@@ -44,24 +49,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(users.router)
-app.include_router(qr.router)
-app.include_router(payments.router)
-app.include_router(favorites.router)
-app.include_router(bong.router)
-app.include_router(agents.router)
+api_app.include_router(users.router)
+api_app.include_router(qr.router)
+api_app.include_router(payments.router)
+api_app.include_router(favorites.router)
+api_app.include_router(bong.router)
+api_app.include_router(agents.router)
 
 
-@app.get("/")
+@api_app.get("/")
 def root():
     return {
         "name": "Lipila API",
         "status": "running",
         "payment_provider": settings.PAYMENT_PROVIDER,
-        "docs": "/docs",
+        "docs": "/api/docs",
     }
 
 
-@app.get("/health")
+@api_app.get("/health")
 def health():
     return {"status": "ok"}
+
+
+app = FastAPI()
+app.mount("/api", api_app)
