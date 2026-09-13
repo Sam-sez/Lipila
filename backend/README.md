@@ -48,9 +48,30 @@ Nothing above needs rewriting. Set these env vars (see `.env.example`):
    by writing one more class that implements `app/providers/base.py`'s
    `PaymentProvider` interface, same pattern as `mtn_provider.py`.
 
-## Deploying (Render)
+## Deploying (Vercel + Neon)
 
-- New Web Service → point at this repo's `backend/` directory.
-- Build command: `pip install -r requirements.txt`
-- Start command: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`
-- Add the env vars from `.env.example` in Render's dashboard.
+Vercel's Python runtime auto-detects FastAPI apps at `app/main.py` — this
+repo already matches that pattern, so deployment is close to zero-config.
+One real constraint: Vercel functions are serverless (no persistent local
+state), so SQLite and the in-memory Redis fallback that work for local dev
+**must** be swapped for real Neon/Upstash before deploying.
+
+1. **Neon:** create a project at [neon.tech](https://neon.tech) (free
+   tier). Copy the **pooled** connection string (hostname contains
+   `-pooler`) — serverless functions open a fresh DB connection per
+   request, and pooling prevents exhausting Postgres's connection limit.
+2. **Upstash Redis:** in your Vercel project dashboard → Storage/Marketplace
+   → add Upstash Redis (free tier). It wires `REDIS_URL` in automatically.
+3. **Import the repo in Vercel:** New Project → import this GitHub repo →
+   set **Root Directory** to `backend`. Vercel will detect the FastAPI
+   framework preset automatically.
+4. **Environment variables** (Vercel project settings): set `DATABASE_URL`
+   to the Neon pooled string, confirm `REDIS_URL` is set (from step 2), and
+   set `FRONTEND_ORIGIN` to your deployed frontend's URL once you have it
+   (step 4 in the frontend README).
+5. Deploy. First request will run `Base.metadata.create_all`, creating the
+   tables in Neon automatically.
+
+If you deploy with a leftover SQLite/local Redis config by mistake, the app
+logs a loud warning at startup rather than failing silently — check your
+Vercel function logs.

@@ -3,6 +3,27 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import Base, engine
 from app.config import settings
 from app.routers import users, qr, payments, favorites, bong, agents
+import os
+import logging
+
+logger = logging.getLogger("lipila")
+
+# Vercel sets VERCEL=1 in its build/runtime environment automatically.
+# If we're there without a real Postgres URL, every request will silently
+# write to a SQLite file that vanishes the moment this invocation ends —
+# far more confusing to debug than a loud warning at boot.
+if os.getenv("VERCEL") and settings.DATABASE_URL.startswith("sqlite"):
+    logger.warning(
+        "Running on Vercel with a SQLite DATABASE_URL. Data will NOT persist "
+        "between requests. Set DATABASE_URL to a Neon Postgres connection "
+        "string in your Vercel project's environment variables."
+    )
+if os.getenv("VERCEL") and settings.REDIS_URL.startswith("redis://localhost"):
+    logger.warning(
+        "Running on Vercel with a local REDIS_URL. Dynamic QR and Bong "
+        "tokens will appear to expire immediately. Add Upstash Redis from "
+        "the Vercel Marketplace and set REDIS_URL to its connection string."
+    )
 
 Base.metadata.create_all(bind=engine)
 

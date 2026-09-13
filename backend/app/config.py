@@ -9,12 +9,21 @@ import os
 class Settings:
     # --- Database ---
     # Local dev: SQLite file, zero setup.
-    # Production: set DATABASE_URL to your Neon Postgres connection string,
-    # e.g. postgresql://user:pass@ep-xxxx.neon.tech/lipila?sslmode=require
+    # Production (Vercel): MUST be a real Neon Postgres URL — Vercel's
+    # filesystem is ephemeral/read-only per invocation, so SQLite silently
+    # loses all data between requests there. Use Neon's POOLED connection
+    # string (the one with "-pooler" in the hostname) — serverless functions
+    # open a fresh connection per request, and pooling avoids exhausting
+    # Postgres's connection limit under load.
+    # e.g. postgresql://user:pass@ep-xxxx-pooler.neon.tech/lipila?sslmode=require
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./lipila.db")
 
     # --- Redis (Dynamic QR + Bong proximity token TTLs) ---
     # Local dev: falls back to an in-memory fake if no Redis is running.
+    # Production (Vercel): MUST be a real Redis (Upstash integrates directly
+    # from the Vercel dashboard's Marketplace tab) — the in-memory fallback
+    # doesn't survive between serverless invocations, so Dynamic QR/Bong
+    # tokens would appear to expire immediately.
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
     # --- Payment provider ---
