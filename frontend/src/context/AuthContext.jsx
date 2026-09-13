@@ -26,6 +26,11 @@ export function AuthProvider({ children }) {
     return created;
   };
 
+  const loginExisting = (existingUser) => {
+    localStorage.setItem("lipila_user_id", existingUser.id);
+    setUser(existingUser);
+  };
+
   const logout = () => {
     localStorage.removeItem("lipila_user_id");
     setUser(null);
@@ -36,7 +41,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, refreshUser }}>
+    <AuthContext.Provider value={{ user, loading, login, loginExisting, logout, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

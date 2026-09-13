@@ -11,6 +11,7 @@ const api = axios.create({ baseURL: API_BASE });
 export const Users = {
   create: (data) => api.post("/users", data).then((r) => r.data),
   get: (id) => api.get(`/users/${id}`).then((r) => r.data),
+  getByNumber: (mobileNumber) => api.get(`/users/by-number/${mobileNumber}`).then((r) => r.data),
   list: () => api.get("/users").then((r) => r.data),
 };
 

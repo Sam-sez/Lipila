@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, NavLink, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./context/AuthContext";
+import TopBar from "./components/TopBar";
 import Login from "./pages/Login";
 import Home from "./pages/Home";
 import Scan from "./pages/Scan";
@@ -60,6 +61,7 @@ export default function App() {
       <BrowserRouter>
         <Shell>
           <AuthGate>
+            <TopBar />
             <AppRoutes />
             <BottomNav />
           </AuthGate>

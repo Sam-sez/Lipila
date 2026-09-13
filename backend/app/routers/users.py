@@ -26,6 +26,19 @@ def get_user(user_id: str, db: Session = Depends(get_db)):
     return user
 
 
+@router.get("/by-number/{mobile_number}", response_model=schemas.UserOut)
+def get_user_by_number(mobile_number: str, db: Session = Depends(get_db)):
+    """
+    Lets a returning user resume their existing account by mobile number
+    alone — this is a demo-identity prototype with no password, so there's
+    no separate 'sign in' form, just recognition of an existing number.
+    """
+    user = db.query(models.User).filter_by(mobile_number=mobile_number).first()
+    if not user:
+        raise HTTPException(404, "No account found for this number")
+    return user
+
+
 @router.get("", response_model=list[schemas.UserOut])
 def list_users(db: Session = Depends(get_db)):
     return db.query(models.User).all()
